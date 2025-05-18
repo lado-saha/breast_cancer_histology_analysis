@@ -23,6 +23,7 @@ An end-to-end pipeline for breast cancer histology image analysis, featuring adv
 The interactive tuner allows for precise configuration of segmentation parameters with live visual feedback across all magnifications for a selected patient slide.
 
 ![Segmentation Tuner UI Screenshot](assets/segmentation_tuner_ui_preview.png)
+![Segmentation Tuner UI Screenshot](assets/segmentation_tuner_ui_preview-2.png)
 
 
 ## 🚀 Getting Started
