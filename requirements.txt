@@ -1,0 +1,14 @@
+
+opencv-python  # Or opencv-python if they need the GUI parts of OpenCV, headless is smaller
+numpy
+pandas
+matplotlib
+seaborn
+scikit-image
+scipy
+ipywidgets          # For tqdm.notebook in pipeline_final.ipynb and general Jupyter widgets
+jupyter             # For running the notebook
+notebook            # For running the notebook (if not using JupyterLab)
+jupyterlab          # Optional, if they prefer JupyterLab
+gradio              # For segmentation_tuner.py
+tqdm                # Used by both scripts
