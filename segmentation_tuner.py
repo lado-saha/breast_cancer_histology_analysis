@@ -1,4 +1,3 @@
-# --- Imports (from your main.ipynb, plus Gradio) ---
 import cv2
 import numpy as np
 import os
@@ -318,98 +317,214 @@ def process_patient_slide(
     return [selected_patient_id, info_text] + outputs_for_tabs + [live_config]
 
 
+# --- UI Layout Improvements ---
+# --- UI Layout Improvements ---
+
 with gr.Blocks(theme=gr.themes.Soft(), title="Nuclei Segmentation Tuner") as app:
     gr.Markdown(
         "# Interactive Nuclei Segmentation Tuner (All Magnifications View)")
-    gr.HTML("""
-    <style>
-        #control-panel { height: 95vh; overflow-y: auto ; padding-right: 15px; }
-        .gradio-container { max-width: 98% ; /* Allow wider layout */ }
-    </style>
-    """)
 
+    # Updated CSS to fix the layout issues
     # Store the currently selected patient ID as state
-    # This is what the dropdown will update, and what will be passed to process_patient_slide
     selected_patient_id_state = gr.State(
         UNIQUE_PATIENT_SLIDE_IDS[0] if UNIQUE_PATIENT_SLIDE_IDS else None)
 
     with gr.Row():
-        with gr.Column(scale=1, elem_id="control-panel"):  # Controls Panel
+        # Left column (control panel) with fixed width
+        with gr.Column(scale=1, elem_id="control-panel", min_width=300):
             gr.Markdown("## Controls")
-            patient_id_dropdown = gr.Dropdown(label="Select Patient/Slide ID", choices=UNIQUE_PATIENT_SLIDE_IDS,
-                                              value=UNIQUE_PATIENT_SLIDE_IDS[0] if UNIQUE_PATIENT_SLIDE_IDS else None)
+            patient_id_dropdown = gr.Dropdown(
+                label="Select Patient/Slide ID",
+                choices=UNIQUE_PATIENT_SLIDE_IDS,
+                value=UNIQUE_PATIENT_SLIDE_IDS[0] if UNIQUE_PATIENT_SLIDE_IDS else None
+            )
             image_info_display = gr.Textbox(
-                label="Processing Info", interactive=False, lines=2)
+                label="Processing Info",
+                interactive=False,
+                lines=2
+            )
+
             gr.Markdown("---")
             gr.Markdown("### Segmentation Parameters")
-            # ... (All parameter sliders and inputs as before) ...
+
+            # Global settings accordion
             with gr.Accordion("Global Settings", open=True):
                 with gr.Row():
                     contrast_stretch_check = gr.Checkbox(
-                        label="Contrast Stretch H-Channel", value=INITIAL_SEGMENTATION_CONFIG['contrast_stretch'])
+                        label="Contrast Stretch H-Channel",
+                        value=INITIAL_SEGMENTATION_CONFIG['contrast_stretch']
+                    )
                     use_watershed_check = gr.Checkbox(
-                        label="Use Watershed", value=INITIAL_SEGMENTATION_CONFIG['use_watershed'])
+                        label="Use Watershed",
+                        value=INITIAL_SEGMENTATION_CONFIG['use_watershed']
+                    )
                 with gr.Row():
                     contrast_p_low_slider = gr.Slider(
-                        label="Contrast Low %", minimum=0, maximum=49, step=1, value=INITIAL_SEGMENTATION_CONFIG['contrast_percentiles_low'])
+                        label="Contrast Low %",
+                        minimum=0,
+                        maximum=49,
+                        step=1,
+                        value=INITIAL_SEGMENTATION_CONFIG['contrast_percentiles_low']
+                    )
                     contrast_p_high_slider = gr.Slider(
-                        label="Contrast High %", minimum=51, maximum=100, step=1, value=INITIAL_SEGMENTATION_CONFIG['contrast_percentiles_high'])
-                threshold_method_radio = gr.Radio(label="Threshold Method", choices=[
-                                                  'otsu', 'manual'], value=INITIAL_SEGMENTATION_CONFIG['threshold_method'])
-                manual_thresh_slider = gr.Slider(label="Manual Threshold (if manual)", minimum=0, maximum=255, step=1,
-                                                 value=INITIAL_SEGMENTATION_CONFIG['manual_threshold_value'], interactive=(INITIAL_SEGMENTATION_CONFIG['threshold_method'] == 'manual'))
-                def update_manual_thresh_interactive(
-                    method): return gr.Slider(interactive=(method == 'manual'))
+                        label="Contrast High %",
+                        minimum=51,
+                        maximum=100,
+                        step=1,
+                        value=INITIAL_SEGMENTATION_CONFIG['contrast_percentiles_high']
+                    )
+
+                threshold_method_radio = gr.Radio(
+                    label="Threshold Method",
+                    choices=['otsu', 'manual'],
+                    value=INITIAL_SEGMENTATION_CONFIG['threshold_method']
+                )
+
+                manual_thresh_slider = gr.Slider(
+                    label="Manual Threshold (if manual)",
+                    minimum=0,
+                    maximum=255,
+                    step=1,
+                    value=INITIAL_SEGMENTATION_CONFIG['manual_threshold_value'],
+                    interactive=(
+                        INITIAL_SEGMENTATION_CONFIG['threshold_method'] == 'manual')
+                )
+
+                def update_manual_thresh_interactive(method):
+                    return gr.Slider(interactive=(method == 'manual'))
+
                 threshold_method_radio.change(
-                    fn=update_manual_thresh_interactive, inputs=threshold_method_radio, outputs=manual_thresh_slider, show_progress="hidden")
+                    fn=update_manual_thresh_interactive,
+                    inputs=threshold_method_radio,
+                    outputs=manual_thresh_slider,
+                    show_progress="hidden"
+                )
+
+            # Morphological Operations accordion
             with gr.Accordion("Morphological Operations", open=False):
-                morph_open_k_slider = gr.Slider(label="Open Kernel (Size)", minimum=1, maximum=15,
-                                                step=2, value=INITIAL_SEGMENTATION_CONFIG['morph_open_kernel_size'])
+                morph_open_k_slider = gr.Slider(
+                    label="Open Kernel (Size)",
+                    minimum=1,
+                    maximum=15,
+                    step=2,
+                    value=INITIAL_SEGMENTATION_CONFIG['morph_open_kernel_size']
+                )
+
                 morph_open_iter_slider = gr.Slider(
-                    label="Open Iterations", minimum=1, maximum=5, step=1, value=INITIAL_SEGMENTATION_CONFIG['morph_open_iterations'])
-                morph_close_k_slider = gr.Slider(label="Close Kernel (Size)", minimum=1, maximum=15,
-                                                 step=2, value=INITIAL_SEGMENTATION_CONFIG['morph_close_kernel_size'])
+                    label="Open Iterations",
+                    minimum=1,
+                    maximum=5,
+                    step=1,
+                    value=INITIAL_SEGMENTATION_CONFIG['morph_open_iterations']
+                )
+
+                morph_close_k_slider = gr.Slider(
+                    label="Close Kernel (Size)",
+                    minimum=1,
+                    maximum=15,
+                    step=2,
+                    value=INITIAL_SEGMENTATION_CONFIG['morph_close_kernel_size']
+                )
+
                 morph_close_iter_slider = gr.Slider(
-                    label="Close Iterations", minimum=1, maximum=5, step=1, value=INITIAL_SEGMENTATION_CONFIG['morph_close_iterations'])
+                    label="Close Iterations",
+                    minimum=1,
+                    maximum=5,
+                    step=1,
+                    value=INITIAL_SEGMENTATION_CONFIG['morph_close_iterations']
+                )
+
+            # Magnification-specific settings
             mag_ui_elements = {}
             for mag_idx, mag_key in enumerate(['40X', '100X', '200X', '400X']):
                 with gr.Accordion(f"Filters & Seed Ratio for {mag_key}", open=(mag_idx == 0)):
                     conf = INITIAL_SEGMENTATION_CONFIG['contour_filters_by_magnification'][mag_key]
                     mag_ui_elements[f'min_area_{mag_key}'] = gr.Slider(
-                        label=f"Min Area", minimum=1, maximum=10000, step=1, value=conf['min_area'])
+                        label=f"Min Area",
+                        minimum=1,
+                        maximum=10000,
+                        step=1,
+                        value=conf['min_area']
+                    )
+
                     mag_ui_elements[f'max_area_{mag_key}'] = gr.Slider(
-                        label=f"Max Area", minimum=100, maximum=50000, step=10, value=conf['max_area'])
+                        label=f"Max Area",
+                        minimum=100,
+                        maximum=50000,
+                        step=10,
+                        value=conf['max_area']
+                    )
+
                     mag_ui_elements[f'min_circ_{mag_key}'] = gr.Slider(
-                        label=f"Min Circularity", minimum=0.0, maximum=1.0, step=0.01, value=conf['min_circularity'])
+                        label=f"Min Circularity",
+                        minimum=0.0,
+                        maximum=1.0,
+                        step=0.01,
+                        value=conf['min_circularity']
+                    )
+
                     mag_ui_elements[f'dt_ratio_{mag_key}'] = gr.Slider(
-                        label=f"Watershed Seed Ratio", minimum=0.01, maximum=0.99, step=0.01, value=conf['dist_transform_thresh_ratio'])
+                        label=f"Watershed Seed Ratio",
+                        minimum=0.01,
+                        maximum=0.99,
+                        step=0.01,
+                        value=conf['dist_transform_thresh_ratio']
+                    )
+
             gr.Markdown("---")
             gr.Markdown("### Configuration Management")
-            current_config_textbox = gr.JSON(
-                value=INITIAL_SEGMENTATION_CONFIG, scale=1)
-            saved_config_textbox = gr.JSON(
-                value=INITIAL_SEGMENTATION_CONFIG, scale=1)
-            save_config_btn = gr.Button(
-                "Save Current Settings to 'Saved Config' Display")
 
-        with gr.Column(scale=3, elem_id="display-panel"):  # Display Panel
+            # Config management section
+            with gr.Row():
+                save_config_btn = gr.Button(
+                    "Save Current Settings",
+                    variant="primary"
+                )
+
+            current_config_textbox = gr.JSON(
+                label="Current Config",
+                value=INITIAL_SEGMENTATION_CONFIG,
+                visible=True
+            )
+
+            saved_config_textbox = gr.JSON(
+                label="Saved Config",
+                value=INITIAL_SEGMENTATION_CONFIG,
+                visible=True
+            )
+
+        # Right column (display panel)
+        with gr.Column(scale=3, elem_id="display-panel"):
             gr.Markdown("## Segmentation Results by Magnification")
 
             # Create UI elements for each magnification within Tabs
-            # We need 4 sets of (Original Image, Intermediate Plot, Final Segmented Image)
-            # These will be the OUTPUTS for process_patient_slide
             output_ui_elements_per_mag = {}
             with gr.Tabs() as magnification_tabs:
                 for mag_key in ['40X', '100X', '200X', '400X']:
-                    # Use id to make them distinct if needed by Gradio
                     with gr.TabItem(label=mag_key, id=mag_key):
                         with gr.Row():
+                            # Original and segmented images side by side
                             output_ui_elements_per_mag[f'orig_{mag_key}'] = gr.Image(
-                                label=f"Original {mag_key}", type="numpy", height=300, interactive=False, scale=1)
+                                label=f"Original {mag_key}",
+                                type="numpy",
+                                height=300,
+                                interactive=False,
+                                scale=1
+                            )
+
                             output_ui_elements_per_mag[f'final_{mag_key}'] = gr.Image(
-                                label=f"Segmented {mag_key}", type="numpy", height=300, interactive=False, scale=1)
+                                label=f"Segmented {mag_key}",
+                                type="numpy",
+                                height=300,
+                                interactive=False,
+                                scale=1
+                            )
+
+                        # Intermediate steps plot (below the images)
                         output_ui_elements_per_mag[f'plot_{mag_key}'] = gr.Plot(
-                            label=f"Intermediate Steps {mag_key}")
+                            label=f"Intermediate Steps {mag_key}",
+                            elem_id=f"plot-container-{mag_key}"
+                        )
 
     # Collect all parameter UI components (inputs to process_patient_slide)
     all_param_inputs_for_event_handling = [
@@ -425,7 +540,6 @@ with gr.Blocks(theme=gr.themes.Soft(), title="Nuclei Segmentation Tuner") as app
     ]
 
     # Collect all output UI components for the tabs
-    # Order: selected_patient_id_state, image_info_display, then [orig_40X, plot_40X, final_40X], [orig_100X, ...], current_config_textbox
     all_outputs_for_processing = [
         selected_patient_id_state,  # This will be updated if dropdown changes selection
         image_info_display,
@@ -444,27 +558,36 @@ with gr.Blocks(theme=gr.themes.Soft(), title="Nuclei Segmentation Tuner") as app
     event_triggers = [patient_id_dropdown] + \
         all_param_inputs_for_event_handling
 
+    # Debounced event handling to prevent excessive recomputation
     for trigger_component in event_triggers:
         trigger_component.change(
             fn=process_patient_slide,
-            # Pass dropdown value, not state here for change
             inputs=[patient_id_dropdown] + all_param_inputs_for_event_handling,
             outputs=all_outputs_for_processing,
-            show_progress="full"  # Show progress as it might take time
+            show_progress="full"
         )
 
+    # Config save button handler
     def save_config_action(live_config_value):
         return live_config_value
-    save_config_btn.click(fn=save_config_action, inputs=[
-                          current_config_textbox], outputs=[saved_config_textbox])
+
+    save_config_btn.click(
+        fn=save_config_action,
+        inputs=[current_config_textbox],
+        outputs=[saved_config_textbox]
+    )
 
     # Load initial data
-    initial_inputs_for_load = [gr.State(
-        UNIQUE_PATIENT_SLIDE_IDS[0] if UNIQUE_PATIENT_SLIDE_IDS else None)] + all_param_inputs_for_event_handling
-    app.load(fn=process_patient_slide, inputs=initial_inputs_for_load,
-             outputs=all_outputs_for_processing)
+    initial_inputs_for_load = [
+        gr.State(UNIQUE_PATIENT_SLIDE_IDS[0]
+                 if UNIQUE_PATIENT_SLIDE_IDS else None)
+    ] + all_param_inputs_for_event_handling
 
-
+    app.load(
+        fn=process_patient_slide,
+        inputs=initial_inputs_for_load,
+        outputs=all_outputs_for_processing
+    )
 if __name__ == '__main__':
     if not ALL_RAW_IMAGE_INFOS or not UNIQUE_PATIENT_SLIDE_IDS:
         print("CRITICAL: No images or patient IDs found. UI cannot start meaningfully.")
@@ -473,3 +596,4 @@ if __name__ == '__main__':
     else:
         print(f"Found {len(ALL_RAW_IMAGE_INFOS)} images, {len(UNIQUE_PATIENT_SLIDE_IDS)} unique patient/slide IDs. Launching Gradio UI...")
         app.launch(debug=True, share=False)
+

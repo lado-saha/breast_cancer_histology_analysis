@@ -24,15 +24,6 @@ The interactive tuner allows for precise configuration of segmentation parameter
 
 ![Segmentation Tuner UI Screenshot](assets/segmentation_tuner_ui_preview.png)
 
-<!--
-    **ACTION REQUIRED:**
-    1. Take a compelling screenshot of your segmentation_tuner.py UI in action.
-    2. Create an 'assets' folder in your GitHub repository.
-    3. Place the screenshot (e.g., 'segmentation_tuner_ui_preview.png') in the 'assets' folder.
-    4. Update the path above if needed.
--->
-
----
 
 ## 🚀 Getting Started
 
