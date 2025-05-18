@@ -1,176 +1,203 @@
-# Breast Cancer Histology Analysis Pipeline
+# 🔬 Decisional Breast Cancer: Advanced Nuclei Analysis Pipeline
 
-This project provides tools for segmenting nuclei in breast cancer histology images and a pipeline for extracting features and training a classification model.
+[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) <!-- Choose an appropriate license -->
 
-## Project Structure
+An end-to-end pipeline for breast cancer histology image analysis, featuring advanced nuclei segmentation, feature extraction, and SVM-based classification. This project provides tools for both fine-tuning segmentation parameters and running the complete machine learning workflow.
 
-```text
-.
-├── pipeline_final.ipynb # Main ML pipeline (feature extraction -> SVM -> evaluation)
+---
 
-├── segmentation_tuner.py # Gradio UI for tuning segmentation parameters
-├── raw/ # Data directory (needs to be populated)
-│ ├── benign/
-│ └── malignant/
-├── requirements.txt # Python package dependencies
-└── README.md # This file
-```
+## ✨ Features
 
-## Setup Instructions
+- **Advanced Nuclei Segmentation:** Utilizes color deconvolution (Hematoxylin channel), adaptive thresholding, morphological operations, and optional watershed for robust nuclei identification.
+- **Interactive Parameter Tuning:** A Gradio-based UI (`segmentation_tuner.py`) allows for real-time visual feedback while adjusting segmentation parameters across different image magnifications (40X, 100X, 200X, 400X).
+- **Comprehensive Feature Extraction:** Calculates a suite of morphological and texture-based features for each segmented nucleus, aggregated per image.
+- **Patient-Level Data Splitting:** Ensures robust model evaluation by splitting data at the patient/slide level, preventing data leakage.
+- **SVM Classification:** Implements a Support Vector Machine classifier for benign/malignant prediction.
+- **Detailed Evaluation:** Provides accuracy, classification reports, confusion matrices, and ROC AUC scores.
 
-1.  **Clone the Repository (if applicable):**
-    If this project is in a Git repository, clone it:
+---
+
+## 🖼️ Sneak Peek: Segmentation Tuner UI
+
+The interactive tuner allows for precise configuration of segmentation parameters with live visual feedback across all magnifications for a selected patient slide.
+
+![Segmentation Tuner UI Screenshot](assets/segmentation_tuner_ui_preview.png)
+
+<!--
+    **ACTION REQUIRED:**
+    1. Take a compelling screenshot of your segmentation_tuner.py UI in action.
+    2. Create an 'assets' folder in your GitHub repository.
+    3. Place the screenshot (e.g., 'segmentation_tuner_ui_preview.png') in the 'assets' folder.
+    4. Update the path above if needed.
+-->
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to set up and run the project on your local machine.
+
+### 📋 Prerequisites
+
+- Python 3.9 or higher
+- Git (for cloning the repository)
+
+### ⚙️ Setup Instructions
+
+1.  **Clone the Repository:**
 
     ```bash
-    git clone <repository_url>
-    cd <repository_directory_name>
+    git clone https://github.com/lado-saha/decisional-breast-cancer.git
+    cd decisional-breast-cancer
     ```
 
-2.  **Create a Virtual Environment (Recommended):**
-    It's highly recommended to use a virtual environment to manage dependencies.
+2.  **Create and Activate a Virtual Environment (Recommended):**
 
     ```bash
     python3 -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
+    source venv/bin/activate  # On Linux/macOS
+    # venv\Scripts\activate   # On Windows
     ```
 
 3.  **Install Dependencies:**
-    Install the required Python packages using pip:
+    Install the required Python packages from `requirements.txt`:
 
     ```bash
     pip install -r requirements.txt
     ```
 
-4.  **Set up `ipywidgets` for Jupyter (Crucial for `pipeline_final.ipynb`):**
-    If you encounter issues with progress bars (`tqdm.notebook`) in `pipeline_final.ipynb`, ensure `ipywidgets` is correctly configured for your Jupyter environment:
+4.  **Configure `ipywidgets` for Jupyter (Important!):**
+    For the `pipeline_final.ipynb` notebook to display progress bars correctly, `ipywidgets` needs to be enabled:
 
     - **For Jupyter Notebook:**
       ```bash
       jupyter nbextension enable --py widgetsnbextension --sys-prefix
       ```
     - **For JupyterLab:**
-      You might need to install `jupyterlab-widgets` and potentially rebuild JupyterLab:
+      You might also need `jupyterlab-widgets`:
       `bash
       pip install jupyterlab-widgets
       jupyter labextension develop --overwrite widgetsnbextension
 
-    # If prompted, or if widgets still don't work:
-
-    # jupyter lab build
-
     `
-    Restart your Jupyter server/kernel after these steps.
+    After these commands, **restart your Jupyter server and kernel.**
 
 5.  **Dataset Preparation:**
-    - You should have received a ZIP file containing the image dataset (approximately 4GB).
-    - Create a directory named `raw` in the root of this project directory if it doesn't already exist.
-    - Extract the contents of the dataset ZIP file directly into this `raw` folder.
-    - The expected structure within the `raw` folder is:
+    - Obtain the breast cancer histology image dataset (approx. 4GB, usually provided as a ZIP file).
+    - Create a directory named `raw` in the root of the `decisional-breast-cancer` project folder.
+    - Extract the entire contents of the dataset ZIP file _directly_ into this `raw` folder.
+    - The expected structure within `raw` is:
       ```
-      raw/
-      ├── benign/
-      │   └── SOB/
-      │       ├── adenosis/
-      │       │   └── <patient_slide_id>/
-      │       │       ├── 40X/
-      │       │       │   └── <image_file.png>
-      │       │       ├── 100X/
-      │       │       └── ...
-      │       └── ... (other benign subtypes)
-      └── malignant/
-          └── SOB/
-              ├── ductal_carcinoma/
-              │   └── <patient_slide_id>/
-              │       ├── 40X/
-              │       └── ...
-              └── ... (other malignant subtypes)
+      decisional-breast-cancer/
+      ├── raw/
+      │   ├── benign/
+      │   │   └── SOB/
+      │   │       ├── adenosis/
+      │   │       │   └── <patient_slide_id>/  (e.g., SOB_B_A_14-22549AB)
+      │   │       │       ├── 40X/
+      │   │       │       │   └── <image_file.png>
+      │   │       │       ├── 100X/
+      │   │       │       ├── 200X/
+      │   │       │       └── 400X/
+      │   │       └── ... (other benign subtypes & patient_slide_ids)
+      │   └── malignant/
+      │       └── SOB/
+      │           ├── ductal_carcinoma/
+      │           │   └── <patient_slide_id>/ (e.g., SOB_M_DC_14-10926)
+      │           │       ├── 40X/
+      │           │       └── ...
+      │           └── ... (other malignant subtypes & patient_slide_ids)
+      ├── pipeline_final.ipynb
+      ├── segmentation_tuner.py
+      ├── requirements.txt
+      └── README.md
       ```
-    - **Important:** The scripts rely on this directory structure and the naming convention of the image files to determine magnification and patient/slide IDs.
 
-## Usage
+---
 
-There are two main components to this project:
+## 🎮 Usage
 
-### A. Interactive Segmentation Parameter Tuner (`segmentation_tuner.py`)
+This project consists of two primary components:
 
-This Gradio application allows you to visually inspect and fine-tune the parameters for the advanced nuclei segmentation algorithm.
+### 1. Interactive Segmentation Parameter Tuner (`segmentation_tuner.py`)
 
-1.  **Launch the Tuner:**
-    Navigate to the project's root directory in your terminal (where `segmentation_tuner.py` is located) and run:
+This tool is essential for visually fine-tuning the advanced nuclei segmentation parameters.
 
-    ```bash
-    python segmentation_tuner.py
-    ```
+- **Launch:**
 
-    This will start a local web server, and a URL (usually `http://127.0.0.1:7860` or similar) will be printed in the terminal. Open this URL in your web browser.
+  ```bash
+  python segmentation_tuner.py
+  ```
 
-2.  **Using the Tuner UI:**
-    - **Left Panel (Controls):**
-      - **Select Patient/Slide ID:** Use the dropdown to choose a patient/slide. Images for all available magnifications (40X, 100X, 200X, 400X) for this ID will be processed and displayed.
-      - **Segmentation Parameters:** Adjust the sliders and input fields for:
-        - Global Settings (contrast, thresholding, watershed usage).
-        - Morphological Operations (kernel sizes, iterations).
-        - Magnification-Specific Filters: For each magnification (40X, 100X, 200X, 400X), you can set `Min/Max Area`, `Min Circularity` for contours, and the `Watershed Seed Ratio`. The UI will apply the settings relevant to the magnification of the image being processed within each tab.
-      - **Configuration Management:**
-        - "Current Live Configuration (JSON)": Shows the parameters as currently set by the UI controls. This updates live.
-        - "Saved Configuration": Displays the configuration you last "saved".
-        - "Save Current Settings to 'Saved Config' Display": Click this button when you are satisfied with the current live settings. It will copy the "Live Config" to the "Saved Config" display.
-    - **Right Panel (Segmentation Results):**
-      - This panel has **Tabs** for each magnification (40X, 100X, 200X, 400X).
-      - Within each tab, you will see:
-        - The original image for that magnification.
-        - The final segmented image with nuclei contours overlaid.
-        - A plot showing the intermediate steps of the segmentation process.
-    - **Tuning Process:**
-      1.  Select a Patient/Slide ID.
-      2.  Observe the segmentation results across all magnification tabs.
-      3.  Adjust parameters in the left panel. The displays in the right panel will update automatically.
-      4.  Iterate by selecting different Patient/Slide IDs and refining parameters until you achieve satisfactory segmentation across various image types and magnifications.
-      5.  Once happy, click "Save Current Settings to 'Saved Config' Display".
-      6.  **Copy the JSON content from the "Saved Configuration" text box.** This is the configuration you will use in the main pipeline.
+  Open the local URL (e.g., `http://127.0.0.1:7860`) printed in your terminal in a web browser.
 
-### B. Main Machine Learning Pipeline (`pipeline_final.ipynb`)
+- **How to Use:**
+  1.  **Select Patient/Slide ID:** Use the dropdown in the left control panel. Results for all available magnifications for this ID will be displayed in the right panel under corresponding tabs (40X, 100X, 200X, 400X).
+  2.  **Adjust Parameters:** Modify the sliders and inputs in the left panel (Global Settings, Morphological Ops, Magnification-Specific Filters). The image displays on the right will update live.
+  3.  **Iterate:** Cycle through different patient/slide IDs and magnifications to ensure your parameters are robust.
+  4.  **Save Configuration:** When satisfied, click "Save Current Settings to 'Saved Config' Display".
+  5.  **Copy Tuned Config:** Carefully copy the JSON content from the "Saved Config" text box. This will be used in the main pipeline.
 
-This Jupyter Notebook runs the full workflow: patient-level data splitting, feature extraction using the advanced segmentation, SVM model training, and evaluation.
+### 2. Main Machine Learning Pipeline (`pipeline_final.ipynb`)
+
+This Jupyter Notebook executes the end-to-end workflow.
 
 1.  **Launch Jupyter:**
-    Start Jupyter Notebook or JupyterLab from your project's root directory:
 
     ```bash
-    jupyter notebook
-    # or
-    jupyter lab
+    jupyter notebook  # or jupyter lab
     ```
 
-    Open `pipeline_final.ipynb` from the Jupyter interface.
+    Open `pipeline_final.ipynb`.
 
-2.  **Update Segmentation Configuration:**
+2.  **Critical Step: Update `SEGMENTATION_CONFIG`:**
 
-    - Navigate to **Cell [4] (Configuration)** in the notebook.
-    - Locate the `SEGMENTATION_CONFIG` dictionary.
-    - **Paste the JSON configuration you copied from the `segmentation_tuner.py` UI** into this dictionary, ensuring it's valid Python dictionary syntax. This step is crucial for the pipeline to use your optimally tuned segmentation parameters.
+    - Navigate to **Cell [4] (Configuration)**.
+    - Find the `SEGMENTATION_CONFIG = {...}` dictionary.
+    - **Replace the example/default values with the JSON configuration you copied from the `segmentation_tuner.py` UI.** Ensure it's valid Python dictionary syntax.
 
 3.  **Run the Notebook:**
+    Execute all cells sequentially (e.g., Cell -> Run All). The pipeline will:
 
-    - Execute all cells in the notebook sequentially (e.g., "Run" -> "Run All Cells").
-    - The notebook will:
-      - Scan the `raw` directory for images.
-      - Perform a patient-level split of the data into training and testing sets.
-      - Extract features from images in the training set using the advanced segmentation.
-      - Train an SVM classifier.
-      - Extract features from images in the testing set.
-      - Evaluate the SVM model on the test set and display metrics (accuracy, classification report, confusion matrix, ROC AUC).
+    - Load image paths and perform a patient-level train/test split.
+    - Extract features using your tuned advanced segmentation.
+    - Train an SVM model.
+    - Evaluate the model and display performance metrics.
 
 4.  **Review Results:**
-    - Analyze the output, particularly the model evaluation metrics in Section 9 and the summary in Section 10.
+    Analyze the outputs, especially the model evaluation metrics (accuracy, classification report, confusion matrix, ROC AUC) provided at the end of the notebook.
 
-## Notes
+---
 
-- The path to the data directory (`ROOT_DATA_DIR`) is set dynamically in both `segmentation_tuner.py` and `pipeline_final.ipynb` to be `./raw/` relative to the script/notebook's location. Ensure the `raw` folder is in the same directory as these files.
-- The quality of nuclei segmentation significantly impacts feature extraction and, consequently, model performance. Spend adequate time tuning the parameters using `segmentation_tuner.py`.
+## 🛠️ Under the Hood: Segmentation Strategy
 
-## Troubleshooting
+The `segment_nuclei_pipeline` function employs the following steps:
 
-- **`ImportError: IProgress not found` in `pipeline_final.ipynb`:** Ensure `ipywidgets` is installed and enabled for your Jupyter environment (see Setup Step 4). As a fallback, you can change `from tqdm.notebook import tqdm` to `from tqdm import tqdm` in Cell [2] of the notebook.
-- **`FileNotFoundError` or "No images found":** Double-check that `ROOT_DATA_DIR` is correctly pointing to your `raw` data folder and that the folder is populated with the dataset in the expected structure.
-- **Slow UI Updates in `segmentation_tuner.py`:** If processing all magnifications for a patient ID is too slow for live updates, you might consider adding an "Apply Parameters" button to trigger reprocessing manually. This would involve changing `.change(...)` events to be triggered by a button click.
+1.  **Color Deconvolution:** Isolates the Hematoxylin channel using `skimage.color.rgb2hed`.
+2.  **Contrast Stretching (Optional):** Enhances the H-channel using `skimage.exposure.rescale_intensity`.
+3.  **Thresholding:** Creates a binary mask using Otsu's method or a manual threshold.
+4.  **Morphological Operations:** Cleans the mask using `cv2.MORPH_OPEN` and `cv2.MORPH_CLOSE`.
+5.  **Watershed Segmentation (Optional):** Separates touching nuclei using `cv2.distanceTransform` for seeds and `cv2.watershed`.
+6.  **Contour Filtering:** Refines detected objects based on area and circularity, with parameters specific to each image magnification.
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Please feel free to:
+
+- Open an issue if you encounter a bug or have a suggestion.
+- Fork the repository and submit a pull request with your improvements.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details (if you add one).
+
+<!-- **ACTION REQUIRED:** Create a LICENSE.md file with your chosen license (e.g., MIT) -->
+
+---
+
+**Happy Analyzing!** 💡
