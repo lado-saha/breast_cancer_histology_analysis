@@ -14,3 +14,4 @@ gradio              # For segmentation_tuner.py
 tqdm                # Used by both scripts
 xgboost
 cookiecutter
+imblearn

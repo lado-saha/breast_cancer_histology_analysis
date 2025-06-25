@@ -14,6 +14,8 @@ plt.style.use('seaborn-v0_8-whitegrid')
 
 # --- Configuration (Restored for all magnifications) ---
 ROOT_DATA_DIR = './raw/'
+SAVE_FILE_PATH = './config/segmentation_config.json'
+
 # Define available magnifications
 ALL_MAGNIFICATIONS = ['40X', '100X', '200X', '400X']
 INITIAL_SEGMENTATION_CONFIG = {
@@ -30,6 +32,7 @@ INITIAL_SEGMENTATION_CONFIG = {
         '400X': {'min_area': 200, 'max_area': 7000, 'min_circularity': 0.3, 'dist_transform_thresh_ratio': 0.6}
     }
 }
+
 
 def get_all_image_paths(root_dir):
     all_image_infos = []
@@ -528,8 +531,10 @@ with gr.Blocks(theme=gr.themes.Ocean(), title=f"Nuclei Segmentation Tuner") as a
         "next"), all_ids_state], outputs=[patient_id_dropdown])
 
     def save_config_action(current_config_obj):
+        
         if isinstance(current_config_obj, (dict, list)):
-            return json.dumps(current_config_obj, indent=2)
+            with open(SAVE_FILE_PATH) as f:
+                f.write(json.dumps(current_config_obj, indent=2))
         try:
             parsed = json.loads(str(current_config_obj))
             return json.dumps(parsed, indent=2)
