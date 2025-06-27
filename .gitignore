@@ -4,7 +4,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.pdf
-
+*.png
 # C extensions
 *.so
 
@@ -28,12 +28,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/version info into it.
-*.manifest
-*.spec
 
 # Installer logs
 pip-log.txt
@@ -142,7 +136,8 @@ tasks.xml # User-specific tasks
 
 # Atom
 .atom/
-
+*.txt
+*.csv
 # Eclipse
 .project
 .cproject
@@ -193,13 +188,13 @@ lerna-debug.log*
 secrets.yml
 credentials.*
 
-# Gradio specific cache (if any, not usually an issue)
+# Gradio specific cache
 .gradio_cache/
 
 # Specific to your project if needed
 # segmentation_tuner_config_saved.json # If you output this from the tuner
 raw/*
 
-# Tree file (if generated and not meant to be versioned)
+# Tree file 
 tree.txt
 project_context.txt 

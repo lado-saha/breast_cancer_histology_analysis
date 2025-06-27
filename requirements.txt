@@ -1,4 +1,4 @@
-opencv-python  # Or opencv-python if they need the GUI parts of OpenCV, headless is smaller
+opencv-python  
 numpy
 pandas
 matplotlib
@@ -14,4 +14,8 @@ gradio              # For segmentation_tuner.py
 tqdm                # Used by both scripts
 xgboost
 cookiecutter
-imblearn
+
+# Cookie cutter
+
+loguru 
+dotenv
