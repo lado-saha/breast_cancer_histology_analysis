@@ -28,7 +28,7 @@
       "max_area": 100000,
       "min_circularity": 0.1,
       "dist_transform_thresh_ratio": 0.3
-    },
+    } ,
     "400X": {
       "min_area": 200,
       "max_area": 100000,
